@@ -45,6 +45,46 @@ ToggleBtn.MouseButton1Click:Connect(function()
 end)
 
 --=======================
+-- MAKE GUI DRAGGABLE
+--=======================
+local dragging
+local dragInput
+local dragStart
+local startPos
+
+local function update(input)
+	local delta = input.Position - dragStart
+	Frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X,
+		startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
+Frame.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = true
+		dragStart = input.Position
+		startPos = Frame.Position
+
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
+	end
+end)
+
+Frame.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement then
+		dragInput = input
+	end
+end)
+
+UIS.InputChanged:Connect(function(input)
+	if input == dragInput and dragging then
+		update(input)
+	end
+end)
+
+--=======================
 -- AUTOSHOOT FUNCTION
 --=======================
 local function DoAutoShoot()
@@ -58,7 +98,6 @@ local function DoAutoShoot()
 	RunService.RenderStepped:Wait() -- small wait to register input
 	local startTime = tick()
 	while tick() - startTime < holdTime do
-		-- simulate holding E; in-game mechanics should register it
 		RunService.RenderStepped:Wait()
 	end
 
